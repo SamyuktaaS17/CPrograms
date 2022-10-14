@@ -34,7 +34,21 @@ int main()
     balance=stip-total;
     
     printf("\n Total expenditure is = %f",total);
-    printf("\n Balance is = %f",balance);
+     
+    if(balance>0)
+    {
+        printf("\n Balance is = %f",balance);
+    }
+    
+    else if(balance=0)
+    {
+        printf("\n zero balance");
+    }
+    
+    else
+    {
+        printf("\n Excess Expenditure by = %f",balance);
+    }
     
     return 0;
 }
