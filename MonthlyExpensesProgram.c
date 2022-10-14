@@ -40,13 +40,14 @@ int main()
         printf("\n Balance is = %f",balance);
     }
     
-    else if(balance=0)
+    else if(balance==0)
     {
         printf("\n zero balance");
     }
     
     else
     {
+	balance=-balance;
         printf("\n Excess Expenditure by = %f",balance);
     }
     
