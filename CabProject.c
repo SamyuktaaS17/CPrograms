@@ -1,10 +1,10 @@
+
 #include<stdio.h>
 #include<time.h>
 #include<stdlib.h>
 #include<stdbool.h>
 #include <ctype.h>
 #include<string.h>
-
 
 struct Pick_Up_Time{
     int MM;
@@ -27,24 +27,10 @@ struct CabDriver {
     int type;
 };
 
-
-int mapping_locations(char location[]);
-int Search(int array[], int start_index, int end_index, int element);
-int shortest_distance(int map[11][11],int source,int distances[],int unvisited[],int count);
-void cab_min_distance(int dist[],int ind[]);
-int getIndex(int ind[],int *n);
-int fare_calculation(struct userInfo u, int distance,int opt);
-int Cancellation(bool y_n,int total_fare);
-void writeUserDataToFile(struct userInfo u,int TF);
-void readCabDrivers(struct CabDriver drivers[], int *numDrivers);
-void printNearestCabDriver(int index,int source,struct CabDriver drivers[],int numDrivers,struct userInfo u);
-int total_distance(int distances[],int loc_dest);
-
-
 int main()
 {
     
-    int opt,n=1;
+    int opt;
     int min_node=0;
     int total_fare=0;
     int total_dist=0;
@@ -52,10 +38,15 @@ int main()
     struct userInfo uInfo;
     printf("Enter name: \n");
     scanf("%s",uInfo.name);
+    
     printf("Enter pick-up location: \n");
     scanf(" %[^\n]s",uInfo.location);
+    
+    
     printf("Enter destination: \n");
     scanf(" %[^\n]s",uInfo.destination);
+    
+    
     printf("Enter mode of travel:\n1.Sedan \n2.Hatchback \n3.Auto \n4.SUV \n");
     scanf("%d",&uInfo.modeOfTravel);
     printf("Select: 1.Immediate Pickup   2.Later pickup\n");
@@ -66,8 +57,8 @@ int main()
         scanf("%d %d",&uInfo.tim.HH,&uInfo.tim.MM);
     }
     
-    int loc_source=mapping_locations(uInfo.location);
     int loc_dest=mapping_locations(uInfo.destination);
+    int loc_source=mapping_locations(uInfo.location);
     
     //for mapping function
     //Mapping    
@@ -90,7 +81,6 @@ int main()
     //Initializing values
     int distances[11]={100,100,100,100,100,100,100,100,100,100,100};
     distances[loc_source]=0;
-    int index[11]={0,1,2,3,4,5,6,7,8,9,10};
 
     int unvisited[11]={0,1,2,3,4,5,6,7,8,9,10};
     int count=10;
@@ -98,29 +88,15 @@ int main()
     //Function call
     shortest_distance(map,loc_source,distances,unvisited,count);
     
-    // Read cab driver details from file
-    struct CabDriver drivers[14];
-    int numDrivers;
-    readCabDrivers(drivers, &numDrivers);
-
-    // total distance calculation
+    //getting the closest node
+    min_node=cab_min_distance(distances);
     total_dist=total_distance(distances,loc_dest);
+    printf("%d\n",min_node);
 
-    
-    //min_node
-    cab_min_distance(distances,index);
-    min_node=getIndex(index, &n);
-    int flag= printNearestCabDriver(min_node,loc_source,drivers,numDrivers,uInfo);
-
-    while(flag!=1)
-    {
-        min_node=getIndex(index, &n);
-        flag= printNearestCabDriver(min_node,loc_source,drivers,numDrivers,uInfo);
-    }
     
     //printing the fare
     total_fare = fare_calculation(uInfo,total_dist,opt);
-    printf("Total fare: %d\n",total_fare);
+    printf("\nTotal fare: %d\n",total_fare);
     
     //cancelling
     printf("Do you wish to cancel the ride?(1 for yes or 0 for no): ");
@@ -130,14 +106,14 @@ int main()
     total_fare=Cancellation(y_n,total_fare);
     if(y_n)
     {
-        printf("Total fare with cancellation: %d\n",total_fare);
+        printf("\nTotal fare with cancellation: %d\n",total_fare);
     
         //writing customer data to file
         writeUserDataToFile(uInfo,total_fare);
     }
     else
     {
-        printf("Total fare is : Rs %d \n",total_fare);
+        printf("\nFinal fare is : Rs %d \n",total_fare);
         //writing customer data to file
         writeUserDataToFile(uInfo,total_fare);
         
@@ -145,7 +121,9 @@ int main()
         struct CabDriver drivers[13];
         int numDrivers;
         readCabDrivers(drivers, &numDrivers);
-
+        
+        printf("----------------------------------------------------------------------------------------------------");
+        printf("\nCAB DRIVER DETAILS\n");
         // Print details of the nearest cab driver at the source node
         printNearestCabDriver(min_node,loc_source,drivers,numDrivers,uInfo);
     
@@ -157,6 +135,7 @@ int main()
 int mapping_locations(char location[])
 {
     int loc;
+    int flag=0;
     for (int i = 0; i < strlen(location); i++) {
         location[i] = tolower(location[i]);
     }
@@ -165,8 +144,8 @@ int mapping_locations(char location[])
     {
         if(strcmp(location,locations[i])==0)
             loc=i;
+            flag=1;
     }
-    return loc;
 }
 
 //int shortest_distance(int map[11][11],int source,int distances[],int unvisited[],int count);
@@ -203,7 +182,7 @@ int shortest_distance(int map[11][11],int source,int distances[],int unvisited[]
         
         
         
-        if(map[source][i]!=0)//we only check for adjacent nodes
+        if(map[source][i]!=0)//we only check for adjaecent nodes
         {
             //update distance between nodes if it is shorter than present distance
             if(distances[source]+map[source][i]<distances[i])
@@ -234,7 +213,7 @@ int shortest_distance(int map[11][11],int source,int distances[],int unvisited[]
     
     
     
-    for( ;c<count;c++)
+    for( c ;c<count;c++)
         unvisited[c] = unvisited[c+1];
     unvisited[count]=0;
     count--;
@@ -255,36 +234,20 @@ int shortest_distance(int map[11][11],int source,int distances[],int unvisited[]
 
 }
 
-//sorting shortest distance in ascending order and changing index
-void cab_min_distance(int dist[],int ind[])
+//finding min distance
+int cab_min_distance(int distances[])
 {
-    int index=0,temp1=0,temp2=0;
+    int min=1000,index=0;
     for(int i=0;i<11;i++)
     {
-        for(int j=0;j<11;j++)
+        if(distances[i]!=0 && distances[i]<min)
         {
-            if(dist[i]>dist[j])
-            {
-                temp1=dist[i];
-                dist[i]=dist[j];
-                dist[j]=temp1;
-                
-                temp2=ind[i];
-                ind[i]=ind[j];
-                ind[j]=temp2;
-            }
+            min=distances[i];
+            index=i;
         }
     }
-}
-
-//getting the index of the node with the minimum distances
-int getIndex(int ind[],int *n)
-{
-    int index=ind[10-*n];
-    *n+=1;
     return index;
 }
-
 
 //total distance
 int total_distance(int distances[],int loc_dest)
@@ -403,7 +366,7 @@ void readCabDrivers(struct CabDriver drivers[], int *numDrivers) {
     fclose(file);
 }
 
-/*//printing cab details
+//printing cab details
 void printNearestCabDriver(int index,int source,struct CabDriver drivers[],int numDrivers,struct userInfo u)
 {
     int flag=0;
@@ -411,139 +374,36 @@ void printNearestCabDriver(int index,int source,struct CabDriver drivers[],int n
     {
         if(drivers[i].node==source)
         {
+            printf("Nearest Cab Driver:\n");
+            printf("Name: %s\n", drivers[i].name);
+            printf("License Plate: %s\n", drivers[i].licensePlate);
+            printf("Location: %d\n", abs(source));
+            printf("Type: %d\n", drivers[i].type);
+            flag=1;
+            break;
+        }
+        else if(drivers[i].node==abs(index))
+        {
             if(drivers[i].type==u.modeOfTravel)
             {
-	        printf("----------------------------------------------------------------------------\n");
             printf("Nearest Cab Driver:\n");
             printf("Name: %s\n", drivers[i].name);
             printf("License Plate: %s\n", drivers[i].licensePlate);
-            printf("Location: %d\n", source);
-            switch(drivers[i].type)
-            {
-                case 1:
-                 printf("Sedan\n");
-                 break;
-                case 2:
-                 printf("Hatchback\n");
-                 break;
-                case 3:
-                 printf("Auto\n");
-                 break;
-                case 4:
-                 printf("SUV\n");
-                 break;
-                default:
-                 break;
-            }
-            flag=1;
-            }
-            else
-            {
-	        printf("----------------------------------------------------------------------------\n");
-            printf("Nearest Cab Driver:\n");
-            printf("Name: %s\n", drivers[i].name);
-            printf("License Plate: %s\n", drivers[i].licensePlate);
-            printf("Location: %d\n", source);
-            switch(drivers[i].type)
-            {
-                case 1:
-                 printf("Sedan\n");
-                 break;
-                case 2:
-                 printf("Hatchback\n");
-                 break;
-                case 3:
-                 printf("Auto\n");
-                 break;
-                case 4:
-                 printf("SUV\n");
-                 break;
-                default:
-                 break;
-            }
+            printf("Location: %d\n", abs(index));
+            printf("Type: %d\n", drivers[i].type);
             flag=1;
             break;
             }
         }
-    }
-    
-    if(flag==0)
-    {
-        for(int i=0;i<numDrivers;i++)
+        
+        else if(flag==0)
         {
-        if(drivers[i].node==index)
-        {
-            if(drivers[i].type==u.modeOfTravel)
-            {
-            printf("----------------------------------------------------------------------------\n");
-            printf("Nearest Cab Driver:\n");
-            printf("Name: %s\n", drivers[i].name);
-            printf("License Plate: %s\n", drivers[i].licensePlate);
-            printf("Location: %d\n", index);
-            switch(drivers[i].type)
-            {
-                case 1:
-                 printf("Sedan\n");
-                 break;
-                case 2:
-                 printf("Hatchback\n");
-                 break;
-                case 3:
-                 printf("Auto\n");
-                 break;
-                case 4:
-                 printf("SUV\n");
-                 break;
-                default:
-                 break;
-            }
-            }
-            else
-            {
-            printf("----------------------------------------------------------------------------\n");
             printf("Nearest Cab Driver:\n");
             printf("Name: %s\n", drivers[index].name);
             printf("License Plate: %s\n", drivers[index].licensePlate);
-            printf("Location: %d\n", source);
-            switch(drivers[i].type)
-            {
-                case 1:
-                 printf("Sedan\n");
-                 break;
-                case 2:
-                 printf("Hatchback\n");
-                 break;
-                case 3:
-                 printf("Auto\n");
-                 break;
-                case 4:
-                 printf("SUV\n");
-                 break;
-                default:
-                 break;
-            }
-	        break;
-            }
-        }
+            printf("Location: %d\n", abs(index));
+            printf("Type: %s\n", drivers[index].type);
         }
         
     }
 }
-*/
-
-//find the cab at index
-int printNearestCabDriver(int index,int source,struct CabDriver drivers[],int numDrivers,struct userInfo u)
-{
-    int flag=0;
-    for(int i=0;i<numDrivers;i++)
-    {
-        if(drivers[i].node==index)
-        {
-            flag=1;
-            break;
-        }
-    }
-    printf("%d",flag);
-    return flag; 
-}
-
