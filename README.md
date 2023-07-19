@@ -34,8 +34,4 @@ The software system consists of the following files:
 8. If the trip is canceled, the fare with the cancellation fee will be displayed, and the user's data will be stored in the `customers.txt` file.
 9. If the trip is confirmed, the fare will be displayed, the user's data will be stored in the `customers.txt` file, and the cab driver's information will be updated in the `cab_drivers.txt` file.
 
-Note: Make sure the input files (`cab_drivers.txt` and `distance_from_nodes.txt`) are formatted correctly as described in the sample files above.
-
-Feel free to customize the code and input files to add more features or modify the existing ones based on your requirements.
-
 Happy cab hailing!
